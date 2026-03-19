@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Entwicklungsschnecke digital – Profi</title>
+<style>
+  :root {
+    --bg: #f7f4ef;
+    --card: #ffffff;
+    --line: #d7d1c7;
+    --text: #2b2b2b;
+    --muted: #6f6a63;
+    --shadow: 0 10px 30px rgba(0,0,0,.08);
+    --blue: rgba(69, 173, 221, .78);
+    --pink: rgba(238, 97, 164, .78);
+    --green: rgba(132, 200, 30, .78);
+    --yellow: rgba(247, 207, 44, .82);
+    --mint: rgba(158, 215, 145, .78);
+    --violet: rgba(153, 94, 198, .78);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--text);
+    background: linear-gradient(180deg, #fbf9f6 0%, #f2eee8 100%);
+  }
+  .app {
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 18px;
+  }
+  .topbar {
+    display: grid;
+    grid-template-columns: 1.3fr .9fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid rgba(0,0,0,.06);
+    border-radius: 22px;
+    box-shadow: var(--shadow);
+  }
+  .hero { padding: 18px 20px; }
+  .hero h1 {
+    margin: 0 0 8px;
+    font-size: 1.65rem;
+  }
+  .hero p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.45;
+  }
+  .controls {
+    padding: 16px;
+    display: grid;
+    gap: 12px;
+    align-content: start;
+  }
+  .row { display: grid; gap: 10px; }
+  .row.two { grid-template-columns: 1fr 1fr; }
+  label {
+    font-size: .9rem;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 6px;
+  }
+  input, select, button, textarea {
+    font: inherit;
+  }
+  input, select {
+    width: 100%;
+    padding: 11px 12px;
+    border-radius: 14px;
+    border: 1px solid #d9d4ca;
+    background: #fff;
+  }
+  button {
+    border: 0;
+    border-radius: 14px;
+    padding: 11px 14px;
+    background: #2f6fec;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  button.secondary { background: #f0ece6; color: #2c2c2c; }
+  button.warn { background: #d94a4a; }
+  .button-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(720px, 1.25fr) minmax(320px, .75fr);
+    gap: 16px;
+  }
+  .board {
+    padding: 16px;
+    overflow: auto;
+  }
+  .side {
+    padding: 14px;
+    display: grid;
+    gap: 14px;
+    align-content: start;
+  }
+  .mini-card {
+    border: 1px solid rgba(0,0,0,.06);
+    border-radius: 18px;
+    padding: 12px;
+    background: #fff;
+  }
+  .stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .stats.three { grid-template-columns: repeat(3, 1fr); }
+  .progress-list { display: grid; gap: 10px; }
+  .progress-row { display: grid; grid-template-columns: 1.2fr 1fr auto; gap: 10px; align-items: center; }
+  .progress-row label { margin: 0; color: var(--text); font-size: .92rem; }
+  .bar { height: 12px; background: #efe9e0; border-radius: 999px; overflow: hidden; border: 1px solid #e2dbcf; }
+  .bar > span { display: block; height: 100%; border-radius: 999px; }
+  .small-muted { color: var(--muted); font-size: .88rem; }
+  .backup-box { background: #faf7f3; border-radius: 16px; padding: 10px 12px; border: 1px solid #ece5db; display:grid; gap:6px; }
+  .print-note { font-size: .84rem; color: var(--muted); line-height: 1.35; }
+  .stat {
+    background: #faf7f3;
+    border-radius: 16px;
+    padding: 12px;
+    border: 1px solid #ece5db;
+  }
+  .stat strong {
+    display: block;
+    font-size: 1.45rem;
+    margin-top: 6px;
+  }
+  .legend {
+    display: grid;
+    gap: 8px;
+    font-size: .95rem;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(0,0,0,.08);
+  }
+  .help {
+    font-size: .93rem;
+    color: var(--muted);
+    line-height: 1.45;
+  }
+  .group-title {
+    font-weight: 700;
+    margin: 0 0 10px;
+  }
+  svg { width: 100%; height: auto; display: block; }
+  .cell {
+    fill: white;
+    stroke: #cfc8bc;
+    stroke-width: 1.1;
+    cursor: pointer;
+    transition: fill .12s ease, opacity .12s ease;
+  }
+  .cell.active { stroke: rgba(0,0,0,.18); }
+  .cell.milestone { stroke-width: 1.35; }
+  .num {
+    font-size: 11px;
+    text-anchor: middle;
+    dominant-baseline: middle;
+    fill: #2f2f2f;
+    pointer-events: none;
+    user-select: none;
+  }
+  .sector-label {
+    font-size: 16px;
+    font-weight: 700;
+    fill: #3a3a3a;
+  }
+  .sector-line {
+    stroke: #bfb8ab;
+    stroke-width: 3;
+  }
+  .outer-line {
+    fill: none;
+    stroke-width: 8;
+    stroke-linecap: round;
+  }
+  .ring-center {
+    fill: #d8d1c6;
+    opacity: .75;
+  }
+  .start-label { font-size: 16px; font-weight: 700; fill: #333; }
+  .chip-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0,1fr));
+    gap: 6px;
+  }
+  .chip {
+    padding: 7px 0;
+    border-radius: 999px;
+    border: 1px solid #d7d0c4;
+    background: #fff;
+    cursor: pointer;
+    text-align: center;
+    font-size: .88rem;
+  }
+  .chip.active {
+    border-color: rgba(0,0,0,.16);
+    box-shadow: inset 0 0 0 999px rgba(0,0,0,.04);
+    font-weight: 700;
+  }
+  .footer-note {
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: .88rem;
+  }
+  @media (max-width: 1100px) {
+    .topbar, .layout { grid-template-columns: 1fr; }
+    .board { min-width: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="card hero">
+      <h1>Digitale Entwicklungsschnecke</h1>
+      <p>Für jedes Kind kannst du eine eigene Schnecke speichern. Ein Klick auf eine Zahl färbt das Feld ein, ein zweiter Klick entfernt die Farbe wieder. Alle Daten werden direkt auf deinem Gerät gespeichert.</p>
+    </div>
+    <div class="card controls">
+      <div class="row">
+        <div>
+          <label for="childSelect">Kind auswählen</label>
+          <select id="childSelect"></select>
+        </div>
+      </div>
+      <div class="row two">
+        <div>
+          <label for="childName">Name</label>
+          <input id="childName" type="text" placeholder="z. B. Anna M." />
+        </div>
+        <div>
+          <label for="childDob">Geburtsdatum</label>
+          <input id="childDob" type="date" />
+        </div>
+      </div>
+      <div class="button-row">
+        <button id="saveChildBtn">Kind speichern</button>
+        <button class="secondary" id="newChildBtn">Neues Kind</button>
+        <button class="warn" id="deleteChildBtn">Aktuelles Kind löschen</button>
+      </div>
+      <div class="button-row">
+        <button class="secondary" id="exportBtn">Backup exportieren</button>
+        <button class="secondary" id="importBtn">Backup importieren</button>
+        <input id="importFile" type="file" accept="application/json" hidden />
+      </div>
+      <div class="button-row">
+      </div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="card board">
+      <svg id="snailSvg" viewBox="0 0 1200 820" aria-label="Entwicklungsschnecke"></svg>
+      <div class="footer-note">Tipp: Für eine schnelle Übersicht kannst du unten rechts zusätzlich Zahlen direkt antippen.</div>
+    </div>
+
+    <div class="card side">
+      <div class="mini-card">
+        <p class="group-title">Übersicht</p>
+        <div class="stats three">
+          <div class="stat"><span>Ausgefüllt</span><strong id="filledCount">0</strong></div>
+          <div class="stat"><span>Offen</span><strong id="openCount">169</strong></div>
+          <div class="stat"><span>Gesamtfortschritt</span><strong id="progressCount">0%</strong></div>
+        </div>
+      </div>
+
+      <div class="mini-card">
+        <p class="group-title">Bildungsbereiche</p>
+        <div class="legend">
+          <div class="legend-item"><span class="dot" style="background: var(--green)"></span> Spielen (1–38)</div>
+          <div class="legend-item"><span class="dot" style="background: var(--yellow)"></span> Sprechen, Hören, Sehen (39–61)</div>
+          <div class="legend-item"><span class="dot" style="background: var(--mint)"></span> Denken (62–90)</div>
+          <div class="legend-item"><span class="dot" style="background: var(--violet)"></span> Bewegung (91–114)</div>
+          <div class="legend-item"><span class="dot" style="background: var(--blue)"></span> Lebenspraxis (115–143)</div>
+          <div class="legend-item"><span class="dot" style="background: var(--pink)"></span> Soziales Miteinander / Emotionalität (144–169)</div>
+        </div>
+      </div>
+
+      
+
+      <div class="mini-card">
+        <p class="group-title">Fortschritt je Bildungsbereich</p>
+        <div id="progressList" class="progress-list"></div>
+      </div>
+      <div class="mini-card">
+        <p class="group-title">Direktzahlen</p>
+        <label for="sectorQuick">Bereich wählen</label>
+        <select id="sectorQuick"></select>
+        <div style="height:10px"></div>
+        <div id="chipGrid" class="chip-grid"></div>
+      </div>
+
+      <div class="mini-card">
+        <p class="group-title">Backup</p>
+        <div class="backup-box">
+          <div><strong>Automatisch gespeichert:</strong> <span id="autosaveState">ja</span></div>
+          <div><strong>Letzte Änderung:</strong> <span id="lastSavedAt">–</span></div>
+          <div><strong>Letztes Export-Backup:</strong> <span id="lastBackupAt">–</span></div>
+        </div>
+        <div class="print-note" style="margin-top:10px">Tipp: Ein Export-Backup zusätzlich auf dem Mac speichern, dann bist du doppelt abgesichert.</div>
+      </div>
+
+      <div class="mini-card help">
+        PDF-Export öffnet die Druckansicht. Dort kannst du am Mac unten links direkt „Als PDF sichern“ wählen.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'entwicklungsschnecke_kinder_v2_profi';
+const LAST_BACKUP_KEY = 'entwicklungsschnecke_last_backup';
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+const sectors = [
+  { key: 'spielen', label: 'Spielen', color: 'var(--green)', outer: '#98bf1b', start: -8, end: 54, numbers: range(1, 38), rowCounts: [8,7,7,6,5,5] },
+  { key: 'sprehen', label: 'Sprechen, Hören, Sehen', color: 'var(--yellow)', outer: '#e6a10f', start: 54, end: 112, numbers: range(39, 61), rowCounts: [4,4,4,4,3,4] },
+  { key: 'denken', label: 'Denken', color: 'var(--mint)', outer: '#5eb9b2', start: 112, end: 172, numbers: range(62, 90), rowCounts: [5,5,5,5,4,5] },
+  { key: 'bewegung', label: 'Bewegung', color: 'var(--violet)', outer: '#c03f8f', start: 172, end: 232, numbers: range(91, 114), rowCounts: [4,4,4,4,4,4] },
+  { key: 'lebenspraxis', label: 'Lebenspraxis', color: 'var(--blue)', outer: '#5a9ad7', start: 232, end: 294, numbers: range(115, 143), rowCounts: [5,5,5,5,4,5] },
+  { key: 'sozial', label: 'Soziales Miteinander / Emotionalität', color: 'var(--pink)', outer: '#c81c42', start: 294, end: 352, numbers: range(144, 169), rowCounts: [5,5,4,4,4,4] }
+];
+
+const model = {
+  children: [],
+  activeChildId: null
+};
+
+const el = {
+  childSelect: document.getElementById('childSelect'),
+  childName: document.getElementById('childName'),
+  childDob: document.getElementById('childDob'),
+  saveChildBtn: document.getElementById('saveChildBtn'),
+  newChildBtn: document.getElementById('newChildBtn'),
+  deleteChildBtn: document.getElementById('deleteChildBtn'),
+  exportBtn: document.getElementById('exportBtn'),
+  importBtn: document.getElementById('importBtn'),
+  importFile: document.getElementById('importFile'),
+  snailSvg: document.getElementById('snailSvg'),
+  filledCount: document.getElementById('filledCount'),
+  openCount: document.getElementById('openCount'),
+  sectorQuick: document.getElementById('sectorQuick'),
+  chipGrid: document.getElementById('chipGrid'),
+  progressCount: document.getElementById('progressCount'),
+  progressList: document.getElementById('progressList'),
+  autosaveState: document.getElementById('autosaveState'),
+  lastSavedAt: document.getElementById('lastSavedAt'),
+  lastBackupAt: document.getElementById('lastBackupAt'),
+  pdfBtn: document.getElementById('pdfBtn')
+};
+
+function range(start, endInclusive) {
+  return Array.from({ length: endInclusive - start + 1 }, (_, i) => start + i);
+}
+
+const milestoneWeights = {
+  42: 1.8,
+  57: 1.55,
+  60: 1.75,
+  67: 1.45,
+  68: 1.45,
+  75: 1.55,
+  79: 1.55,
+  90: 1.8,
+  103: 1.65,
+  106: 1.7,
+  121: 1.45,
+  126: 1.55,
+  128: 1.5,
+  134: 1.55,
+  138: 1.8,
+  142: 1.75,
+  168: 1.65
+};
+
+function getCellWeight(num) {
+  return milestoneWeights[num] || 1;
+}
+
+function makeId() {
+  return Math.random().toString(36).slice(2, 10);
+}
+
+function emptyMarks() {
+  const marks = {};
+  for (let i = 1; i <= 169; i++) marks[i] = false;
+  return marks;
+}
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed.children)) {
+        model.children = parsed.children;
+        model.activeChildId = parsed.activeChildId || (parsed.children[0] && parsed.children[0].id) || null;
+        model.lastSavedAt = parsed.lastSavedAt || null;
+      }
+    }
+  } catch {}
+  if (!model.children.length) {
+    const first = { id: makeId(), name: 'Kind 1', dob: '', marks: emptyMarks() };
+    model.children = [first];
+    model.activeChildId = first.id;
+    save();
+  }
+}
+
+function save() {
+  model.lastSavedAt = new Date().toISOString();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(model));
+  updateBackupInfo();
+}
+
+function getActiveChild() {
+  return model.children.find(c => c.id === model.activeChildId) || model.children[0];
+}
+
+function syncChildForm() {
+  const child = getActiveChild();
+  el.childSelect.innerHTML = '';
+  model.children.forEach(childItem => {
+    const option = document.createElement('option');
+    option.value = childItem.id;
+    option.textContent = childItem.name || 'Ohne Namen';
+    if (childItem.id === child.id) option.selected = true;
+    el.childSelect.appendChild(option);
+  });
+  el.childName.value = child.name || '';
+  el.childDob.value = child.dob || '';
+}
+
+function formatDateTime(value) {
+  if (!value) return '–';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '–';
+  return d.toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' });
+}
+
+function updateBackupInfo() {
+  el.autosaveState.textContent = 'ja';
+  el.lastSavedAt.textContent = formatDateTime(model.lastSavedAt);
+  el.lastBackupAt.textContent = formatDateTime(localStorage.getItem(LAST_BACKUP_KEY));
+}
+
+function getSectorProgress() {
+  const child = getActiveChild();
+  return sectors.map(sec => {
+    const filled = sec.numbers.filter(num => child.marks[num]).length;
+    const total = sec.numbers.length;
+    return { ...sec, filled, total, percent: Math.round((filled / total) * 100) };
+  });
+}
+
+function renderProgress() {
+  const items = getSectorProgress();
+  el.progressList.innerHTML = '';
+  items.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'progress-row';
+    row.innerHTML = `<label>${item.label}</label><div class="bar"><span style="width:${item.percent}%; background:${item.color}"></span></div><div class="small-muted">${item.filled}/${item.total} · ${item.percent}%</div>`;
+    el.progressList.appendChild(row);
+  });
+}
+
+function buildPrintHtml() {
+  const child = getActiveChild();
+  const progress = getSectorProgress();
+  const svgMarkup = document.getElementById('snailSvg').outerHTML;
+  return `<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>Entwicklungsschnecke – ${child.name}</title><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:24px;color:#222}h1{margin:0 0 6px;font-size:28px}p{margin:4px 0 0} .meta{margin-bottom:18px;color:#555} .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:18px 0} .box{border:1px solid #ddd;border-radius:14px;padding:12px;background:#faf8f5} .bar{height:10px;background:#eee;border-radius:999px;overflow:hidden;margin-top:8px} .bar span{display:block;height:100%} svg{width:100%;height:auto;max-width:1000px;display:block;margin:14px auto 0} .foot{margin-top:18px;color:#666;font-size:12px}</style></head><body><h1>Entwicklungsschnecke</h1><div class="meta"><p><strong>Kind:</strong> ${child.name || 'Ohne Namen'}</p><p><strong>Geburtsdatum:</strong> ${child.dob || '–'}</p><p><strong>Erstellt am:</strong> ${new Date().toLocaleString('de-AT', { dateStyle:'short', timeStyle:'short' })}</p></div><div class="grid">${progress.map(item => `<div class="box"><strong>${item.label}</strong><div>${item.filled} von ${item.total} Feldern · ${item.percent}%</div><div class="bar"><span style="width:${item.percent}%;background:${item.color}"></span></div></div>`).join('')}</div>${svgMarkup}<div class="foot">Digitale Entwicklungsschnecke – persönliche Arbeitsversion</div></body></html>`;
+}
+
+function openPrintView(autoPrint = false) {
+  saveChildMeta();
+  const printWindow = window.open('', '_blank', 'width=1200,height=900');
+  if (!printWindow) {
+    alert('Die Druckansicht konnte nicht geöffnet werden. Bitte Pop-ups kurz erlauben.');
+    return;
+  }
+  printWindow.document.open();
+  printWindow.document.write(buildPrintHtml());
+  printWindow.document.close();
+  printWindow.focus();
+  if (autoPrint) {
+    setTimeout(() => { printWindow.print(); }, 300);
+  }
+}
+
+function updateStats() {
+  const child = getActiveChild();
+  const filled = Object.values(child.marks).filter(Boolean).length;
+  const percent = Math.round((filled / 169) * 100);
+  el.filledCount.textContent = filled;
+  el.openCount.textContent = 169 - filled;
+  el.progressCount.textContent = percent + '%';
+  renderProgress();
+  updateBackupInfo();
+}
+
+function polarToCartesian(cx, cy, rx, ry, angleDeg) {
+  const a = angleDeg * Math.PI / 180;
+  return { x: cx + rx * Math.cos(a), y: cy + ry * Math.sin(a) };
+}
+
+function cellPath(cx, cy, outerRx, outerRy, innerRx, innerRy, startDeg, endDeg) {
+  const p1 = polarToCartesian(cx, cy, outerRx, outerRy, startDeg);
+  const p2 = polarToCartesian(cx, cy, outerRx, outerRy, endDeg);
+  const p3 = polarToCartesian(cx, cy, innerRx, innerRy, endDeg);
+  const p4 = polarToCartesian(cx, cy, innerRx, innerRy, startDeg);
+  const largeArc = (endDeg - startDeg) > 180 ? 1 : 0;
+  return [
+    `M ${p1.x.toFixed(2)} ${p1.y.toFixed(2)}`,
+    `A ${outerRx.toFixed(2)} ${outerRy.toFixed(2)} 0 ${largeArc} 1 ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`,
+    `L ${p3.x.toFixed(2)} ${p3.y.toFixed(2)}`,
+    `A ${innerRx.toFixed(2)} ${innerRy.toFixed(2)} 0 ${largeArc} 0 ${p4.x.toFixed(2)} ${p4.y.toFixed(2)}`,
+    'Z'
+  ].join(' ');
+}
+
+function renderSnail() {
+  el.snailSvg.innerHTML = '';
+  const child = getActiveChild();
+  const cx = 590, cy = 410;
+  const outerRx = 470, outerRy = 310;
+  const innerRx = 170, innerRy = 112;
+  const rows = 6;
+  const ringGapX = (outerRx - innerRx) / rows;
+  const ringGapY = (outerRy - innerRy) / rows;
+
+  // center opening
+  const center = document.createElementNS(SVG_NS, 'ellipse');
+  center.setAttribute('cx', cx);
+  center.setAttribute('cy', cy);
+  center.setAttribute('rx', innerRx - 22);
+  center.setAttribute('ry', innerRy - 18);
+  center.setAttribute('fill', '#f7f4ef');
+  el.snailSvg.appendChild(center);
+
+  // sector boundaries and cells
+  sectors.forEach((sector, sectorIndex) => {
+    const totalSpan = sector.end - sector.start;
+    for (let row = 0; row < rows; row++) {
+      const rowCount = sector.rowCounts[row];
+      const rowOuterRx = outerRx - row * ringGapX;
+      const rowOuterRy = outerRy - row * ringGapY;
+      const rowInnerRx = outerRx - (row + 1) * ringGapX;
+      const rowInnerRy = outerRy - (row + 1) * ringGapY;
+
+      const numbersBeforeThisRow = sector.rowCounts
+        .slice(row + 1)
+        .reduce((sum, count) => sum + count, 0);
+
+      const rowNumbers = sector.numbers.slice(numbersBeforeThisRow, numbersBeforeThisRow + rowCount);
+      const rowWeights = rowNumbers.map(num => getCellWeight(num));
+      const totalWeightForRow = rowWeights.reduce((sum, weight) => sum + weight, 0);
+      let usedWeight = 0;
+
+      for (let c = 0; c < rowCount; c++) {
+        const num = rowNumbers[c];
+        const weight = rowWeights[c];
+        const start = sector.start + (usedWeight / totalWeightForRow) * totalSpan;
+        usedWeight += weight;
+        const end = sector.start + (usedWeight / totalWeightForRow) * totalSpan;
+        const path = document.createElementNS(SVG_NS, 'path');
+        path.setAttribute('d', cellPath(cx, cy, rowOuterRx, rowOuterRy, rowInnerRx, rowInnerRy, start, end));
+        path.setAttribute('class', 'cell' + (weight > 1 ? ' milestone' : '') + (child.marks[num] ? ' active' : ''));
+        path.setAttribute('data-number', num);
+        path.setAttribute('data-color', sector.color);
+        path.style.fill = child.marks[num] ? `color-mix(in srgb, ${sector.color} 100%, white 0%)` : 'white';
+        path.addEventListener('click', () => toggleNumber(num));
+        el.snailSvg.appendChild(path);
+
+        const midAngle = (start + end) / 2;
+        const tx = polarToCartesian(cx, cy, (rowOuterRx + rowInnerRx)/2, (rowOuterRy + rowInnerRy)/2, midAngle);
+        const text = document.createElementNS(SVG_NS, 'text');
+        text.setAttribute('x', tx.x);
+        text.setAttribute('y', tx.y);
+        text.setAttribute('class', 'num');
+        if (weight > 1) text.setAttribute('font-size', '12.5');
+        text.textContent = num;
+        el.snailSvg.appendChild(text);
+      }
+    }
+
+    // outer colored arc
+    const arc = document.createElementNS(SVG_NS, 'path');
+    const p1 = polarToCartesian(cx, cy, outerRx + 14, outerRy + 14, sector.start);
+    const p2 = polarToCartesian(cx, cy, outerRx + 14, outerRy + 14, sector.end);
+    const largeArc = (sector.end - sector.start) > 180 ? 1 : 0;
+    arc.setAttribute('d', `M ${p1.x} ${p1.y} A ${outerRx+14} ${outerRy+14} 0 ${largeArc} 1 ${p2.x} ${p2.y}`);
+    arc.setAttribute('class', 'outer-line');
+    arc.setAttribute('stroke', sector.outer);
+    el.snailSvg.appendChild(arc);
+
+    // labels
+    const labelAngle = (sector.start + sector.end) / 2;
+    const labelPos = polarToCartesian(cx, cy, outerRx + 110, outerRy + 90, labelAngle);
+    const label = document.createElementNS(SVG_NS, 'text');
+    label.setAttribute('x', labelPos.x);
+    label.setAttribute('y', labelPos.y);
+    label.setAttribute('class', 'sector-label');
+    label.setAttribute('text-anchor', 'middle');
+    label.textContent = sector.label;
+    el.snailSvg.appendChild(label);
+  });
+
+  // rays
+  sectors.forEach(sector => {
+    const ray = document.createElementNS(SVG_NS, 'line');
+    const p1 = polarToCartesian(cx, cy, 30, 20, sector.start);
+    const p2 = polarToCartesian(cx, cy, outerRx + 5, outerRy + 5, sector.start);
+    ray.setAttribute('x1', p1.x); ray.setAttribute('y1', p1.y);
+    ray.setAttribute('x2', p2.x); ray.setAttribute('y2', p2.y);
+    ray.setAttribute('class', 'sector-line');
+    el.snailSvg.appendChild(ray);
+  });
+
+  const centerCircle = document.createElementNS(SVG_NS, 'ellipse');
+  centerCircle.setAttribute('cx', cx);
+  centerCircle.setAttribute('cy', cy);
+  centerCircle.setAttribute('rx', 55);
+  centerCircle.setAttribute('ry', 42);
+  centerCircle.setAttribute('class', 'ring-center');
+  el.snailSvg.appendChild(centerCircle);
+
+  const startText = document.createElementNS(SVG_NS, 'text');
+  startText.setAttribute('x', cx + 110);
+  startText.setAttribute('y', cy + 28);
+  startText.setAttribute('class', 'start-label');
+  startText.textContent = 'Start';
+  el.snailSvg.appendChild(startText);
+
+  const startMark = document.createElementNS(SVG_NS, 'path');
+  startMark.setAttribute('d', `M ${cx+150} ${cy+16} l 16 0 l -8 -14 z`);
+  startMark.setAttribute('fill', '#222');
+  el.snailSvg.appendChild(startMark);
+
+  updateStats();
+  renderChips();
+}
+
+function renderSectorQuick() {
+  el.sectorQuick.innerHTML = '';
+  sectors.forEach(sec => {
+    const opt = document.createElement('option');
+    opt.value = sec.key;
+    opt.textContent = `${sec.label} (${sec.numbers[0]}–${sec.numbers[sec.numbers.length-1]})`;
+    el.sectorQuick.appendChild(opt);
+  });
+}
+
+function renderChips() {
+  const child = getActiveChild();
+  const sec = sectors.find(s => s.key === el.sectorQuick.value) || sectors[0];
+  el.chipGrid.innerHTML = '';
+  sec.numbers.forEach(num => {
+    const chip = document.createElement('button');
+    chip.className = 'chip' + (child.marks[num] ? ' active' : '');
+    chip.textContent = num;
+    chip.style.background = child.marks[num] ? `color-mix(in srgb, ${sec.color} 100%, white 0%)` : '#fff';
+    chip.addEventListener('click', () => toggleNumber(num));
+    el.chipGrid.appendChild(chip);
+  });
+}
+
+function toggleNumber(num) {
+  const child = getActiveChild();
+  child.marks[num] = !child.marks[num];
+  save();
+  renderSnail();
+}
+
+function createNewChild() {
+  const nextNr = model.children.length + 1;
+  const child = { id: makeId(), name: `Kind ${nextNr}`, dob: '', marks: emptyMarks() };
+  model.children.push(child);
+  model.activeChildId = child.id;
+  save();
+  syncChildForm();
+  renderSnail();
+}
+
+function saveChildMeta() {
+  const child = getActiveChild();
+  child.name = el.childName.value.trim() || 'Ohne Namen';
+  child.dob = el.childDob.value || '';
+  save();
+  syncChildForm();
+}
+
+function deleteCurrentChild() {
+  if (model.children.length === 1) {
+    alert('Es muss mindestens ein Kind vorhanden sein.');
+    return;
+  }
+  const child = getActiveChild();
+  if (!confirm(`„${child.name}“ wirklich löschen?`)) return;
+  model.children = model.children.filter(c => c.id !== child.id);
+  model.activeChildId = model.children[0].id;
+  save();
+  syncChildForm();
+  renderSnail();
+}
+
+function exportData() {
+  saveChildMeta();
+  const now = new Date().toISOString();
+  localStorage.setItem(LAST_BACKUP_KEY, now);
+  const blob = new Blob([JSON.stringify(model, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  const active = getActiveChild();
+  const safeName = (active.name || 'kind').replace(/[^a-z0-9äöüß_-]+/gi, '_');
+  a.download = `entwicklungsschnecke-backup-${safeName}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  updateBackupInfo();
+}
+
+function importData(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(reader.result);
+      if (!Array.isArray(parsed.children)) throw new Error();
+      model.children = parsed.children;
+      model.activeChildId = parsed.activeChildId || (parsed.children[0] && parsed.children[0].id);
+      save();
+      syncChildForm();
+      renderSnail();
+      alert('Daten wurden importiert.');
+      updateBackupInfo();
+    } catch {
+      alert('Die Datei konnte nicht importiert werden.');
+    }
+  };
+  reader.readAsText(file);
+}
+
+el.childSelect.addEventListener('change', () => {
+  model.activeChildId = el.childSelect.value;
+  save();
+  syncChildForm();
+  renderSnail();
+});
+el.saveChildBtn.addEventListener('click', saveChildMeta);
+el.newChildBtn.addEventListener('click', createNewChild);
+el.deleteChildBtn.addEventListener('click', deleteCurrentChild);
+el.exportBtn.addEventListener('click', exportData);
+el.importBtn.addEventListener('click', () => el.importFile.click());
+el.importFile.addEventListener('change', (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (file) importData(file);
+  e.target.value = '';
+});
+el.sectorQuick.addEventListener('change', renderChips);
+
+load();
+renderSectorQuick();
+syncChildForm();
+renderSnail();
+updateBackupInfo();
+</script>
+</body>
+</html>
